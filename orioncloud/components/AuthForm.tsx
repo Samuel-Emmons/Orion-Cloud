@@ -17,22 +17,30 @@ import { Input } from "@/components/ui/input";
 
 type FormType = "sign-in" | "sign-up";
 
-export default function AuthForm({ type }: { type: FormType }) {
-const [isLoading, setIsLoading] = useState(false);
-const [errorMessage, setErrorMessage] =  useState("");
-
-  // VALIDATION: Full name is required only on sign-up.
-  const formSchema = z.object({
+const authFormSchema = (formType: FormType) => {
+  return z.object({
     email: z
       .string()
       .trim()
       .min(1, "Please enter your email.")
       .email("Please enter a valid email address."),
     fullName:
-      type === "sign-up"
-        ? z.string().trim().min(1, "Please enter your full name.")
+      formType === "sign-up"
+        ? z
+            .string()
+            .trim()
+            .min(2, "Full name must be at least 2 characters.")
+            .max(50, "Full name must be at most 50 characters.")
         : z.string().trim(),
   });
+};
+
+export default function AuthForm({ type }: { type: FormType }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // VALIDATION: Full name is required only on sign-up.
+  const formSchema = authFormSchema(type);
   const [submitted, setSubmitted] = useState(false);
   const formId = `auth-form-${type}`;
   const form = useForm<z.infer<typeof formSchema>>({
@@ -119,20 +127,25 @@ const [errorMessage, setErrorMessage] =  useState("");
       {/* SHARED SUBMIT BUTTON: Keep this below all your fields. */}
       <Button type="submit" className="h-11 w-full" disabled={isLoading}>
         {type === "sign-in" ? "Sign In" : "Sign Up"}
-
-        
       </Button>
 
       {errorMessage && (
-        <p> className="error-message*{errorMessage}</p>
+        <p className="error-message" role="alert">
+          {errorMessage}
+        </p>
       )}
 
       <div className="body-2 flex flex-wrap justify-center gap-x-2 gap-y-1">
         <p>
-            {type === "sign-in" ? "Don't have an account? " : "Already have an account? "}
+          {type === "sign-in"
+            ? "Don't have an account? "
+            : "Already have an account? "}
         </p>
-        <Link className="font-semibold" href={type === "sign-in" ? "/sign-up" : "/sign-in"}>
-        {type === "sign-in" ? "Sign Up" : "Sign In"}
+        <Link
+          className="font-semibold"
+          href={type === "sign-in" ? "/sign-up" : "/sign-in"}
+        >
+          {type === "sign-in" ? "Sign Up" : "Sign In"}
         </Link>
       </div>
 
