@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
+import {createAccount} from "@/lib/actions/user.actions";
 import Link from "next/link";
 import * as z from "zod";
 
@@ -38,6 +39,7 @@ const authFormSchema = (formType: FormType) => {
 export default function AuthForm({ type }: { type: FormType }) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [accountId, setAccountId] = useState<string | null>(null)
 
   // VALIDATION: Full name is required only on sign-up.
   const formSchema = authFormSchema(type);
@@ -49,13 +51,30 @@ export default function AuthForm({ type }: { type: FormType }) {
     defaultValues: { email: "", fullName: "" },
   });
 
+  const onSubmit = async (values: z.infer<typeof formSchema>) =>{
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try{
+      const user = await createAccount({
+      fullName: values.fullName || " ",
+      email: values.email
+    })
+      setAccountId(user.accountId);
+    } catch {
+      setErrorMessage('Failed to create an Account. Please try again.')
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <form
       id={formId}
       className="w-full max-w-sm space-y-6"
       noValidate
       onChange={() => setSubmitted(false)}
-      onSubmit={form.handleSubmit(() => setSubmitted(true))}
+      onSubmit={form.handleSubmit(onSubmit)}
     >
       <h1 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
         {type === "sign-in" ? "Sign In" : "Sign Up"}

@@ -1,4 +1,4 @@
-"user server";
+"use server";
 //Create Account Flow
 // 1. user enters full name and email
 // 2. check if user already exists using the email

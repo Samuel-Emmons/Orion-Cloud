@@ -1,7 +1,7 @@
 //this code essentially allows our next.js server to actually talk to appwrite, making a session for things to be changed.
 //The flow is: user signs in, server sets a cookie containing the session's secret, the browser then stores it and inclues it in all later requests to Orion Cloud
 
-"user server"
+"use server"
 import {appwriteConfig} from "@/lib/appwrite/config"
 import {cookies} from "next/headers"
 import {Account, Client, Databases, Avatars, Storage} from "node-appwrite"
