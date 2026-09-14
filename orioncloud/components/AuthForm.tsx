@@ -3,9 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
-import {createAccount} from "@/lib/actions/user.actions";
+import { createAccount } from "@/lib/actions/user.actions";
 import Link from "next/link";
 import * as z from "zod";
+import OtpModal from "@/components/OTPModal";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +40,7 @@ const authFormSchema = (formType: FormType) => {
 export default function AuthForm({ type }: { type: FormType }) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [accountId, setAccountId] = useState<string | null>(null)
+  const [accountId, setAccountId] = useState<string | null>(null);
 
   // VALIDATION: Full name is required only on sign-up.
   const formSchema = authFormSchema(type);
@@ -51,128 +52,138 @@ export default function AuthForm({ type }: { type: FormType }) {
     defaultValues: { email: "", fullName: "" },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) =>{
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     setErrorMessage("");
 
-    try{
+    try {
       const user = await createAccount({
-      fullName: values.fullName || " ",
-      email: values.email
-    })
+        fullName: values.fullName || " ",
+        email: values.email,
+      });
       setAccountId(user.accountId);
     } catch {
-      setErrorMessage('Failed to create an Account. Please try again.')
+      setErrorMessage("Failed to create an Account. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <form
-      id={formId}
-      className="w-full max-w-sm space-y-6"
-      noValidate
-      onChange={() => setSubmitted(false)}
-      onSubmit={form.handleSubmit(onSubmit)}
-    >
-      <h1 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-        {type === "sign-in" ? "Sign In" : "Sign Up"}
-      </h1>
-      {/* Sign Up Fields */}
-      {type === "sign-up" && (
+    <>
+      <form
+        id={formId}
+        className="w-full max-w-sm space-y-6"
+        noValidate
+        onChange={() => setSubmitted(false)}
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
+        <h1 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
+          {type === "sign-in" ? "Sign In" : "Sign Up"}
+        </h1>
+        {/* Sign Up Fields */}
+        {type === "sign-up" && (
+          <Controller
+            name="fullName"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={`${formId}-full-name`}>
+                  Full name
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id={`${formId}-full-name`}
+                  placeholder="Your full name"
+                  autoComplete="name"
+                  required
+                  className="h-11"
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={
+                    fieldState.invalid ? `${formId}-full-name-error` : undefined
+                  }
+                />
+                {fieldState.invalid && (
+                  <FieldError
+                    id={`${formId}-full-name-error`}
+                    errors={[fieldState.error]}
+                  />
+                )}
+              </Field>
+            )}
+          />
+        )}
+
+        {/* SHARED FIELDS: Controllers here appear on both sign-in and sign-up. */}
         <Controller
-          name="fullName"
+          name="email"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={`${formId}-full-name`}>Full name</FieldLabel>
+              <FieldLabel htmlFor={`${formId}-email`}>Email</FieldLabel>
               <Input
                 {...field}
-                id={`${formId}-full-name`}
-                placeholder="Your full name"
-                autoComplete="name"
+                id={`${formId}-email`}
+                placeholder="you@example.com"
+                type="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                spellCheck={false}
                 required
                 className="h-11"
                 aria-invalid={fieldState.invalid}
-                aria-describedby={
-                  fieldState.invalid ? `${formId}-full-name-error` : undefined
-                }
+                aria-describedby={`${formId}-help${fieldState.invalid ? ` ${formId}-error` : ""}`}
               />
+              <FieldDescription id={`${formId}-help`}>
+                {type === "sign-up"
+                  ? "Enter your email to create your Orion Cloud account."
+                  : "Enter the email for your Orion Cloud account."}
+              </FieldDescription>
               {fieldState.invalid && (
                 <FieldError
-                  id={`${formId}-full-name-error`}
+                  id={`${formId}-error`}
                   errors={[fieldState.error]}
                 />
               )}
             </Field>
           )}
         />
-      )}
+        {/* SIGN-IN ONLY: Add future fields here inside type === "sign-in" && (...). */}
 
-      {/* SHARED FIELDS: Controllers here appear on both sign-in and sign-up. */}
-      <Controller
-        name="email"
-        control={form.control}
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor={`${formId}-email`}>Email</FieldLabel>
-            <Input
-              {...field}
-              id={`${formId}-email`}
-              placeholder="you@example.com"
-              type="email"
-              autoComplete="email"
-              autoCapitalize="none"
-              spellCheck={false}
-              required
-              className="h-11"
-              aria-invalid={fieldState.invalid}
-              aria-describedby={`${formId}-help${fieldState.invalid ? ` ${formId}-error` : ""}`}
-            />
-            <FieldDescription id={`${formId}-help`}>
-              {type === "sign-up"
-                ? "Enter your email to create your Orion Cloud account."
-                : "Enter the email for your Orion Cloud account."}
-            </FieldDescription>
-            {fieldState.invalid && (
-              <FieldError id={`${formId}-error`} errors={[fieldState.error]} />
-            )}
-          </Field>
+        {/* SHARED SUBMIT BUTTON: Keep this below all your fields. */}
+        <Button type="submit" className="h-11 w-full" disabled={isLoading}>
+          {type === "sign-in" ? "Sign In" : "Sign Up"}
+        </Button>
+
+        {errorMessage && (
+          <p className="error-message" role="alert">
+            {errorMessage}
+          </p>
         )}
-      />
-      {/* SIGN-IN ONLY: Add future fields here inside type === "sign-in" && (...). */}
 
-      {/* SHARED SUBMIT BUTTON: Keep this below all your fields. */}
-      <Button type="submit" className="h-11 w-full" disabled={isLoading}>
-        {type === "sign-in" ? "Sign In" : "Sign Up"}
-      </Button>
+        <div className="body-2 flex flex-wrap justify-center gap-x-2 gap-y-1">
+          <p>
+            {type === "sign-in"
+              ? "Don't have an account? "
+              : "Already have an account? "}
+          </p>
+          <Link
+            className="font-semibold"
+            href={type === "sign-in" ? "/sign-up" : "/sign-in"}
+          >
+            {type === "sign-in" ? "Sign Up" : "Sign In"}
+          </Link>
+        </div>
 
-      {errorMessage && (
-        <p className="error-message" role="alert">
-          {errorMessage}
-        </p>
+        {submitted && (
+          <p role="status" className="text-sm text-gray-600">
+            Form validated. Account authentication is not connected yet.
+          </p>
+        )}
+      </form>
+      {accountId && (
+        <OtpModal email={form.getValues("email")} accountId={accountId} />
       )}
-
-      <div className="body-2 flex flex-wrap justify-center gap-x-2 gap-y-1">
-        <p>
-          {type === "sign-in"
-            ? "Don't have an account? "
-            : "Already have an account? "}
-        </p>
-        <Link
-          className="font-semibold"
-          href={type === "sign-in" ? "/sign-up" : "/sign-in"}
-        >
-          {type === "sign-in" ? "Sign Up" : "Sign In"}
-        </Link>
-      </div>
-
-      {submitted && (
-        <p role="status" className="text-sm text-gray-600">
-          Form validated. Account authentication is not connected yet.
-        </p>
-      )}
-    </form>
+    </>
   );
 }
