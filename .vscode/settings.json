@@ -1,0 +1,14 @@
+{
+  "js/ts.suggest.autoImports": true,
+  "[typescript][typescriptreact][javascript][javascriptreact]": {
+    "editor.suggest.showAutoImports": true,
+    "editor.quickSuggestions": {
+      "other": "on",
+      "comments": "off",
+      "strings": "off"
+    },
+    "editor.codeActionsOnSave": {
+      "source.addMissingImports": "explicit"
+    }
+  }
+}

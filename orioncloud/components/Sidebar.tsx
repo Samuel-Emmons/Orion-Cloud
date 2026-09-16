@@ -21,7 +21,7 @@ const Sidebar=({fullName, avatar, email}: Props)=>{
     const initials = displayName.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
 
     return(
-        <aside className="sidebar flex h-full w-24 shrink-0 flex-col gap-6 overflow-y-auto border-r border-gray-200 bg-gray-50 px-3 py-6 lg:w-72 lg:px-5">
+        <aside className="sidebar hidden h-full w-24 shrink-0 flex-col gap-6 overflow-y-auto border-r border-gray-200 bg-gray-50 px-3 py-6 md:flex lg:w-72 lg:px-5">
             <Link href="/">
                 <Image src="/assets/icons/logo-full-brand.svg" alt="logo" width={160} height={150} className='hidden h-auto lg:block'>
 

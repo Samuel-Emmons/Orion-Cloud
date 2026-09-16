@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
-import { createAccount } from "@/lib/actions/user.actions";
+import { createAccount, signInUser } from "@/lib/actions/user.actions";
 import Link from "next/link";
 import * as z from "zod";
 import OtpModal from "@/components/OTPModal";
@@ -57,13 +57,27 @@ export default function AuthForm({ type }: { type: FormType }) {
     setErrorMessage("");
 
     try {
-      const user = await createAccount({
-        fullName: values.fullName || " ",
-        email: values.email,
-      });
+      const user =
+        type === "sign-up"
+          ? await createAccount({
+              fullName: values.fullName || " ",
+              email: values.email,
+            })
+          : await signInUser({ email: values.email });
+      if (!user?.accountId) {
+        setErrorMessage(
+          user?.error ||
+            "Unable to send a verification code. Please try again.",
+        );
+        return;
+      }
       setAccountId(user.accountId);
     } catch {
-      setErrorMessage("Failed to create an Account. Please try again.");
+      setErrorMessage(
+        type === "sign-up"
+          ? "Failed to create an account. Please try again."
+          : "Failed to sign in. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }

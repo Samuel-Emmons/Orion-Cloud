@@ -16,7 +16,13 @@ const Layout = async (
         <Sidebar {...currentUser}/>
 
         <section className="flex h-full flex-1 flex-col">
-            <MobileNavigation/>
+            <MobileNavigation
+                ownerId={currentUser.$id}
+                accountId={currentUser.accountId}
+                fullName={currentUser.fullName}
+                avatar={currentUser.avatar}
+                email={currentUser.email}
+            />
             <Header/>
 
             <div className="main-content">
