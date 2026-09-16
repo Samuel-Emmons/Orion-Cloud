@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
-import logo from "@/assets/logo.png";
+import logo from "@/public/assets/logo.png";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (

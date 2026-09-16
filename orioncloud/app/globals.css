@@ -153,3 +153,39 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  .header {
+    @apply flex items-center justify-between gap-4
+      border-b-2 border-brand bg-gray-50 px-6 py-4;
+  }
+
+  .header-wrapper {
+    @apply flex items-center gap-4;
+  }
+
+  .sign-out-button {
+    @apply flex size-10 items-center justify-center
+      rounded-lg bg-gray-200 text-gray-900
+      hover:bg-gray-300;
+  }
+
+  .main-content {
+    @apply min-h-0 flex-1 overflow-y-auto bg-gray-100 p-6;
+  }
+}
+
+@layer components {
+  .sidebar-nav-item {
+    @apply flex items-center gap-3 rounded-xl px-4 py-3
+      text-gray-700 transition-colors hover:bg-gray-200;
+  }
+
+  .sidebar-nav-item.shad-active {
+    @apply bg-brand text-gray-950 hover:bg-brand;
+  }
+
+  .nav-icon {
+    @apply size-6 shrink-0;
+  }
+}

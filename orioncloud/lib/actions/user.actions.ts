@@ -13,6 +13,7 @@ import { appwriteConfig } from "@/lib/appwrite/config";
 import { Query, ID } from "node-appwrite";
 import { parseStringify } from "@/lib/utils";
 import { cookies } from "next/headers";
+import { createSessionClient } from "@/lib/appwrite";
 
 const getUserByEmail = async (email: string) => {
   const { databases } = await createAdminClient();
@@ -87,7 +88,8 @@ export const verifySecret = async ({
       path: "/",
       httpOnly: true,
       sameSite: "strict",
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
+      expires: new Date(session.expire),
     });
 
     return parseStringify({ sessionId: session.$id });
@@ -95,3 +97,23 @@ export const verifySecret = async ({
     handleError(error, "Failed to verify OTP");
   }
 };
+
+export const getCurrentUser = async () => {
+    const session = (await cookies()).get("appwrite-session");
+
+  if (!session?.value) return null;
+
+  const {databases, account} = await createSessionClient();
+
+  const result = await account.get();
+
+  const user = await databases.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.usersTableId,
+    [Query.equal("accountId", [result.$id])]
+  )
+
+  if(user.total <= 0) return null
+
+  return parseStringify(user.documents[0])
+}
