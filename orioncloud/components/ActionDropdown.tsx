@@ -1,9 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { Loader2 } from "lucide-react";
 import { actionsDropdownItems } from "@/constants";
 import { useState } from "react";
 import type { CardFile } from "@/components/Card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import {
   Dialog,
@@ -11,6 +14,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 import {
@@ -28,9 +32,14 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [action, setAction] = useState<ActionType | null>(null);
+  const [name, setName] = useState(file.name);
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
-    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+    <Dialog open={isModalOpen} onOpenChange={(open) => {
+      setIsModalOpen(open);
+      if (!open) setIsLoading(false);
+    }}>
       <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
         <DropdownMenuTrigger className="shad-no-focus">
           <Image
@@ -70,6 +79,8 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
                   className="shad-dropdown-item flex items-center gap-2"
                   onClick={() => {
                     setAction(actionItem);
+                    setIsLoading(false);
+                    setName(file.name);
                     if (
                       ["rename", "share", "delete", "details"].includes(
                         actionItem.value,
@@ -94,13 +105,46 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
         </DropdownMenuContent>
       </DropdownMenu>
 
+
+      {/*Popup modal for the action*/}
       {action && (
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{action.label}</DialogTitle>
+            <DialogTitle>{action.value === "rename" ? "Rename file" : action.label}</DialogTitle>
             <DialogDescription>{file.name}</DialogDescription>
           </DialogHeader>
           {/* Add the form or details for the selected action here. */}
+          {action.value === "rename" && (
+            <label className="grid gap-2 text-sm font-medium">
+              File name
+              <Input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </label>
+          )}
+            {['rename', 'delete', 'share'].includes(action.value) && (
+              <DialogFooter className="flex flex-col gap-3 md:flex-row">
+                <Button type="button" variant="outline" onClick={() => {
+                  setIsModalOpen(false);
+                  setIsLoading(false);
+                }}>
+                  Cancel
+                </Button>
+                {/* Connect this button to the selected action's save handler. */}
+                <Button type="button" disabled={isLoading} aria-busy={isLoading}
+                  onClick={() => {
+                    // When the rename request is added, reset loading in its finally block.
+                    if (action.value === "rename") setIsLoading(true);
+                  }}>
+                  <span className="capitalize">{isLoading ? "Renaming..." : action.value}</span>
+                  {isLoading && (
+                    <Loader2 className="size-5 animate-spin text-brand motion-reduce:animate-none" aria-hidden="true" />
+                  )}
+                </Button>
+              </DialogFooter>
+            )}
         </DialogContent>
       )}
     </Dialog>
