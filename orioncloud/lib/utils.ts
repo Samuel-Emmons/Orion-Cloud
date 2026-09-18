@@ -1,4 +1,13 @@
+import { appwriteConfig } from "@/lib/appwrite/config";
+
 export { cn } from "cn"
+
+export const constructDownloadUrl = (fileId: string): string => {
+    const endpoint = appwriteConfig.endpointUrl.replace(/\/+$/, "");
+    const url = new URL(`${endpoint}/storage/buckets/${encodeURIComponent(appwriteConfig.bucketId)}/files/${encodeURIComponent(fileId)}/download`);
+    url.searchParams.set("project", appwriteConfig.projectId);
+    return url.toString();
+};
 
 export const formatDateTime = (date: string): string => {
     const parsedDate = new Date(date);

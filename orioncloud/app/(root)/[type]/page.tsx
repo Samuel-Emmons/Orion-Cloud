@@ -33,7 +33,7 @@ const Page = async ({ params }: SearchParamProps) => {
 
         {/* Currently working on */}
         {files.total > 0 ? (
-            <section aria-label="Files" className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            <section aria-label="Files" className="mt-6 grid grid-cols-1 gap-3 lg:grid-cols-3 xl:grid-cols-4">
                 {files.documents.map((file: CardFile) => (
                     <Card key={file.$id} file={file}/>
                 ))}
