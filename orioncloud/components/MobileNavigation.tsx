@@ -75,7 +75,7 @@ const MobileNavigation = ({ownerId, accountId, fullName, avatar, email}: Props) 
 
             <div className="flex flex-col justify-between gap-5 pb-5">
 
-                <FileUploader/>
+                <FileUploader ownerId={ownerId} accountId={accountId}/>
 
                 <Button type="submit" variant="outline" aria-label="Sign out" className="size-10 shrink-0 border-gray-300 bg-gray-200 p-2 text-gray-900 hover:bg-gray-300"
                 onClick={async()=> await signOutUser()}>

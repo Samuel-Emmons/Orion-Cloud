@@ -4,6 +4,8 @@ import MobileNavigation from '@/components/MobileNavigation'
 import Header from '@/components/Header'
 import {getCurrentUser} from "@/lib/actions/user.actions"
 import {redirect} from 'next/navigation'
+import { Toaster } from "@/components/ui/toast"
+
 
 const Layout = async (
     { children }: {children: React.ReactNode}
@@ -23,12 +25,13 @@ const Layout = async (
                 avatar={currentUser.avatar}
                 email={currentUser.email}
             />
-            <Header/>
+            <Header ownerId={currentUser.$id} accountId={currentUser.accountId}/>
 
             <div className="main-content">
                 {children}
             </div>
         </section>
+        <Toaster/>
     </main>
     return(
         <div>Layout</div>

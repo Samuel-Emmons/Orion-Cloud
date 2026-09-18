@@ -26,3 +26,16 @@ export const getFileType = (fileName: string): { type: FileType; extension: stri
 
     return { type: "other", extension };
 };
+
+export const convertFileToUrl = (file: File) => URL.createObjectURL(file);
+
+export const getFileIcon = (extension: string, type: string): string => {
+    const category = type || getFileType(`file.${extension.replace(/^\./, "")}`).type;
+    switch (category) {
+        case "image": return "/assets/icons/images.svg";
+        case "document": return "/assets/icons/documents.svg";
+        case "audio":
+        case "video": return "/assets/icons/media.svg";
+        default: return "/assets/icons/others.svg";
+    }
+};
