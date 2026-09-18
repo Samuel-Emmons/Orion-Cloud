@@ -1,5 +1,27 @@
 export { cn } from "cn"
 
+export const formatDateTime = (date: string): string => {
+    const parsedDate = new Date(date);
+    if (Number.isNaN(parsedDate.getTime())) return "Invalid date";
+
+    return new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: "UTC",
+        timeZoneName: "short",
+    }).format(parsedDate);
+};
+
+export const convertFileSize = (bytes: number): string => {
+    if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    const index = Math.min(Math.max(0, Math.floor(Math.log(bytes) / Math.log(1024))), units.length - 1);
+    return `${Number((bytes / 1024 ** index).toFixed(2))} ${units[index]}`;
+};
+
 export const parseStringify = (value: unknown) => {
     return JSON.parse(JSON.stringify(value));
 }

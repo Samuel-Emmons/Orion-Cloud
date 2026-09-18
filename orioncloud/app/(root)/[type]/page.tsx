@@ -1,4 +1,6 @@
 import Sort from "@/components/sort"
+import {getFiles} from "@/lib/actions/file.actions"
+import Card, { type CardFile } from "@/components/Card"
 
 type SearchParamProps = {
     params: Promise<{ type: string }>;
@@ -6,6 +8,8 @@ type SearchParamProps = {
 
 const Page = async ({ params }: SearchParamProps) => {
     const { type } = await params;
+
+    const files = await getFiles();
 
     return <div className="page-container">
         <section className="w-full">
@@ -28,6 +32,13 @@ const Page = async ({ params }: SearchParamProps) => {
         </section>
 
         {/* Currently working on */}
+        {files.total > 0 ? (
+            <section aria-label="Files" className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                {files.documents.map((file: CardFile) => (
+                    <Card key={file.$id} file={file}/>
+                ))}
+            </section>
+        ): <p className="empty-list">No files uploaded</p>}
     </div>
 };
 

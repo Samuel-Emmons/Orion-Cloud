@@ -3,7 +3,8 @@
 import type {UploadFileProps} from "@/types";
 import {createAdminClient} from "@/lib/appwrite"
 import { appwriteConfig } from "@/lib/appwrite/config";
-import { ID } from "node-appwrite";
+import { ID, Query, Models } from "node-appwrite";
+import { getCurrentUser } from "@/lib/actions/user.actions";
 import { InputFile } from "node-appwrite/file";
 import { revalidatePath } from "next/cache";
 import { getFileType, parseStringify } from "@/lib/utils";
@@ -45,7 +46,8 @@ export const uploadFile = async ({file, ownerId, accountId, path}: UploadFilePro
             fileDocument,
         )
 
-            .catch(async(error: unknown) => {
+     
+        .catch(async(error: unknown) => {
                 await storage.deleteFile(appwriteConfig.bucketId, bucketFile.$id);
                 handleError(error, "Failed to create file document")
             });
@@ -54,5 +56,39 @@ export const uploadFile = async ({file, ownerId, accountId, path}: UploadFilePro
             return parseStringify(newFile);
     }catch(error){
         handleError(error, "Failed to upload file");
+    }
+}
+
+const createQueries = (currentUser: Models.Document) => {
+    const queries = [
+        Query.or([
+            Query.equal('owner', currentUser.$id),
+            Query.contains('users', currentUser.$id)
+        ])
+    ];
+
+    //TODO: 
+    return queries;
+}
+
+export const getFiles = async () => {
+    const {databases} =  await createAdminClient();
+
+    try{
+        const currentUser = await getCurrentUser();
+
+        if(!currentUser) throw new Error("User not found")
+            const queries = createQueries(currentUser);
+
+        const files = await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.filesTableId,
+            queries,
+        );
+
+        return parseStringify(files);
+    }catch(error)
+    {
+        handleError(error, "Failed to get files");
     }
 }
