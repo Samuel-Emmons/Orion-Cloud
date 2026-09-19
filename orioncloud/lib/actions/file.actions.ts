@@ -1,6 +1,6 @@
 'use server';
 
-import type {UploadFileProps} from "@/types";
+import type {UploadFileProps, RenameFileProps} from "@/types";
 import {createAdminClient} from "@/lib/appwrite"
 import { appwriteConfig } from "@/lib/appwrite/config";
 import { ID, Query, Models } from "node-appwrite";
@@ -91,4 +91,29 @@ export const getFiles = async () => {
     {
         handleError(error, "Failed to get files");
     }
+}
+
+export const renameFile = async({fileId, name, extension, path}: RenameFileProps) => {
+    const {databases} = await createAdminClient();
+
+    try
+    {
+        const trimmedName = name.trim();
+        if (!trimmedName) throw new Error("File name cannot be empty");
+        const suffix = extension ? `.${extension}` : "";
+        const newName = suffix && !trimmedName.toLowerCase().endsWith(suffix.toLowerCase())
+            ? `${trimmedName}${suffix}`
+            : trimmedName;
+        const updatedFile = await databases.updateDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.filesTableId,
+            fileId,{
+                name: newName,
+            }
+        );
+        revalidatePath(path);
+        return parseStringify(updatedFile);
+    } 
+    catch(error)
+    {handleError(error, "Failed to rename file")}
 }

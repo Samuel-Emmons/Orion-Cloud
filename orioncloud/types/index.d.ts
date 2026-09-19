@@ -4,3 +4,10 @@ export interface UploadFileProps {
     accountId: string;
     path: string;
 }
+
+export interface RenameFileProps {
+    fileId: string;
+    name: string;
+    extension: string;
+    path: string;
+}

@@ -7,6 +7,9 @@ import { useState } from "react";
 import type { CardFile } from "@/components/Card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+import { renameFile } from "@/lib/actions/file.actions";
+import { toast } from "@/components/ui/toast";
 
 import {
   Dialog,
@@ -35,13 +38,43 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
   const [name, setName] = useState(file.name);
   const [isLoading, setIsLoading] = useState(false);
 
+  const path = usePathname();
+
+  //cancel action
+  const closeAllModals = () => {
+    setIsModalOpen(false);
+    setIsDropdownOpen(false);
+    setAction(null);
+    setName(file.name);
+    //setEmails([]);
+  }
+
+  const handleAction = async() => {
+    if(!action || isLoading) return;
+    if (action.value !== "rename") {
+      toast.add({ title: "Not available yet", description: "This action still needs to be implemented." });
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const updatedFile = await renameFile({ fileId: file.$id, name, extension: file.extension, path });
+      if (!updatedFile) throw new Error("Rename failed");
+      toast.add({ title: "File renamed", type: "success" });
+      closeAllModals();
+    } catch {
+      toast.add({ title: "Rename failed", description: "Could not rename the file. Please try again.", type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Dialog open={isModalOpen} onOpenChange={(open) => {
-      setIsModalOpen(open);
-      if (!open) setIsLoading(false);
+      if (!open) closeAllModals();
+      else setIsModalOpen(true);
     }}>
       <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-        <DropdownMenuTrigger className="shad-no-focus">
+        <DropdownMenuTrigger className="shad-no-focus" disabled={isLoading} aria-label={isLoading ? "Renaming file" : "File actions"}>
           <Image
             src="/assets/icons/dots.svg"
             alt="dots"
@@ -79,7 +112,6 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
                   className="shad-dropdown-item flex items-center gap-2"
                   onClick={() => {
                     setAction(actionItem);
-                    setIsLoading(false);
                     setName(file.name);
                     if (
                       ["rename", "share", "delete", "details"].includes(
@@ -120,24 +152,18 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
               <Input
                 type="text"
                 value={name}
+                disabled={isLoading}
                 onChange={(e) => setName(e.target.value)}
               />
             </label>
           )}
             {['rename', 'delete', 'share'].includes(action.value) && (
               <DialogFooter className="flex flex-col gap-3 md:flex-row">
-                <Button type="button" variant="outline" onClick={() => {
-                  setIsModalOpen(false);
-                  setIsLoading(false);
-                }}>
-                  Cancel
+                <Button type="button" variant="outline" onClick={closeAllModals} className="modal-cancel-button">
+                  {isLoading ? "Close" : "Cancel"}
                 </Button>
-                {/* Connect this button to the selected action's save handler. */}
                 <Button type="button" disabled={isLoading} aria-busy={isLoading}
-                  onClick={() => {
-                    // When the rename request is added, reset loading in its finally block.
-                    if (action.value === "rename") setIsLoading(true);
-                  }}>
+                  onClick={handleAction} className="modal-submit-button">
                   <span className="capitalize">{isLoading ? "Renaming..." : action.value}</span>
                   {isLoading && (
                     <Loader2 className="size-5 animate-spin text-brand motion-reduce:animate-none" aria-hidden="true" />
