@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 import { renameFile } from "@/lib/actions/file.actions";
 import { toast } from "@/components/ui/toast";
+import { FileDetails } from "@/components/actionsModalContent";
 
 import {
   Dialog,
@@ -145,6 +146,7 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
             <DialogTitle>{action.value === "rename" ? "Rename file" : action.label}</DialogTitle>
             <DialogDescription>{file.name}</DialogDescription>
           </DialogHeader>
+          {action.value === "details" && <FileDetails file={file} />}
           {/* Add the form or details for the selected action here. */}
           {action.value === "rename" && (
             <label className="grid gap-2 text-sm font-medium">
