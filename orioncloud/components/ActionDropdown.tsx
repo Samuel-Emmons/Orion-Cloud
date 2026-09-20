@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 import { renameFile } from "@/lib/actions/file.actions";
 import { toast } from "@/components/ui/toast";
 import { FileDetails } from "@/components/actionsModalContent";
+import { ShareInput } from "@/components/actionsModalContent";
 
 import {
   Dialog,
@@ -38,6 +39,7 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
   const [action, setAction] = useState<ActionType | null>(null);
   const [name, setName] = useState(file.name);
   const [isLoading, setIsLoading] = useState(false);
+  const [emails, setEmails] = useState<string[]>([])
 
   const path = usePathname();
 
@@ -68,6 +70,10 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
       setIsLoading(false);
     }
   };
+
+  const handleRemoveUser = () => {
+
+  }
 
   return (
     <Dialog open={isModalOpen} onOpenChange={(open) => {
@@ -148,6 +154,7 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
           </DialogHeader>
           {action.value === "details" && <FileDetails file={file} />}
           {/* Add the form or details for the selected action here. */}
+          {action.value === "share" && <ShareInput file={file} onInputChange={setEmails} onRemove={handleRemoveUser}/>}
           {action.value === "rename" && (
             <label className="grid gap-2 text-sm font-medium">
               File name

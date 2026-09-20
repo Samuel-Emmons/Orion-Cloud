@@ -1,7 +1,19 @@
 import type { CardFile } from "@/components/Card";
+import type { Dispatch, SetStateAction } from "react";
+import type { Models } from "node-appwrite";
 import Thumbnail from "@/components/Thumbnail";
 import FormattedDateTime from "@/components/FormattedDateTime";
 import { convertFileSize, formatDateTime } from "@/lib/utils";
+
+interface ShareInputProps {
+    file: Models.Document;
+    onInputChange: Dispatch<SetStateAction<string[]>>;
+    onRemove: (email: string) => void;
+}
+
+export const ShareInput = ({file, onInputChange, onRemove}: ShareInputProps) => {
+    return <div>ShareInput</div>;
+};
 
 const ImageThumbnail = ({file}: {file: CardFile}) => {
     return (
