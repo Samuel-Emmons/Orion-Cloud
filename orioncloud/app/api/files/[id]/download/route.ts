@@ -22,7 +22,8 @@ export async function GET(
       appwriteConfig.filesTableId,
       [Query.equal("$id", id), Query.or([
         Query.equal("owner", user.$id),
-        Query.contains("users", user.$id),
+        // Match the email-based sharing list saved by updateFileUsers.
+        Query.contains("users", [user.email.trim().toLowerCase()]),
       ])],
     );
     const file = files.documents[0];

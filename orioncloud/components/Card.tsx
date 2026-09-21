@@ -12,6 +12,7 @@ export type CardFile = Models.Document & {
     size: number;
     name: string;
     bucketFileId: string;
+    users?: string[];
     owner?: string | { fullName?: string } | null;
 };
 

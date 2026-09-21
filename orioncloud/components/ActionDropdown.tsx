@@ -12,6 +12,7 @@ import { renameFile } from "@/lib/actions/file.actions";
 import { toast } from "@/components/ui/toast";
 import { FileDetails } from "@/components/actionsModalContent";
 import { ShareInput } from "@/components/actionsModalContent";
+import { updateFileUsers } from "@/lib/actions/file.actions";
 
 import {
   Dialog,
@@ -40,6 +41,8 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
   const [name, setName] = useState(file.name);
   const [isLoading, setIsLoading] = useState(false);
   const [emails, setEmails] = useState<string[]>([])
+  // Existing recipients are edited locally; Share saves the complete list.
+  const [sharedEmails, setSharedEmails] = useState<string[]>(file.users ?? []);
 
   const path = usePathname();
 
@@ -49,30 +52,40 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
     setIsDropdownOpen(false);
     setAction(null);
     setName(file.name);
-    //setEmails([]);
+    setEmails([]);
+    setSharedEmails(file.users ?? []);
   }
 
   const handleAction = async() => {
     if(!action || isLoading) return;
-    if (action.value !== "rename") {
+    if (action.value !== "rename" && action.value !== "share") {
       toast.add({ title: "Not available yet", description: "This action still needs to be implemented." });
       return;
     }
     setIsLoading(true);
     try {
-      const updatedFile = await renameFile({ fileId: file.$id, name, extension: file.extension, path });
-      if (!updatedFile) throw new Error("Rename failed");
-      toast.add({ title: "File renamed", type: "success" });
+      // Combine retained recipients with new input, normalize, and remove duplicates.
+      // The server validates these again because browser input cannot be trusted.
+      const recipients = [...new Set([...sharedEmails, ...emails]
+        .map(email => email.trim().toLowerCase()).filter(Boolean))];
+      const updatedFile = action.value === "rename"
+        ? await renameFile({ fileId: file.$id, name, extension: file.extension, path })
+        : await updateFileUsers({ fileId: file.$id, emails: recipients, path });
+      if (!updatedFile) throw new Error("Update failed");
+      toast.add({ title: action.value === "rename" ? "File renamed" : "Sharing updated", type: "success" });
       closeAllModals();
     } catch {
-      toast.add({ title: "Rename failed", description: "Could not rename the file. Please try again.", type: "error" });
+      toast.add({ title: "Update failed", description: "Check the email addresses and make sure you own this file, then try again.", type: "error" });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleRemoveUser = () => {
-
+  const handleRemoveUser = (email: string) => {
+    // Stage removal only. Cancel discards it; Share persists it.
+    if (isLoading) return;
+    setSharedEmails(previous => previous.filter(item => item !== email));
+    setEmails(previous => previous.filter(item => item.toLowerCase() !== email.toLowerCase()));
   }
 
   return (
@@ -81,7 +94,7 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
       else setIsModalOpen(true);
     }}>
       <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-        <DropdownMenuTrigger className="shad-no-focus" disabled={isLoading} aria-label={isLoading ? "Renaming file" : "File actions"}>
+        <DropdownMenuTrigger className="shad-no-focus" disabled={isLoading} aria-label={isLoading ? "Saving changes" : "File actions"}>
           <Image
             src="/assets/icons/dots.svg"
             alt="dots"
@@ -120,6 +133,8 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
                   onClick={() => {
                     setAction(actionItem);
                     setName(file.name);
+                    setEmails([]);
+                    setSharedEmails(file.users ?? []);
                     if (
                       ["rename", "share", "delete", "details"].includes(
                         actionItem.value,
@@ -154,7 +169,12 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
           </DialogHeader>
           {action.value === "details" && <FileDetails file={file} />}
           {/* Add the form or details for the selected action here. */}
-          {action.value === "share" && <ShareInput file={file} onInputChange={setEmails} onRemove={handleRemoveUser}/>}
+          {action.value === "share" && (
+            <fieldset disabled={isLoading} className="min-w-0">
+              <ShareInput file={{ ...file, users: sharedEmails }} onInputChange={setEmails} onRemove={handleRemoveUser}/>
+              <p className="mt-2 text-xs text-gray-500">Press Share to save additions or removals.</p>
+            </fieldset>
+          )}
           {action.value === "rename" && (
             <label className="grid gap-2 text-sm font-medium">
               File name
@@ -173,7 +193,7 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
                 </Button>
                 <Button type="button" disabled={isLoading} aria-busy={isLoading}
                   onClick={handleAction} className="modal-submit-button">
-                  <span className="capitalize">{isLoading ? "Renaming..." : action.value}</span>
+                  <span className="capitalize">{isLoading ? "Saving..." : action.value}</span>
                   {isLoading && (
                     <Loader2 className="size-5 animate-spin text-brand motion-reduce:animate-none" aria-hidden="true" />
                   )}

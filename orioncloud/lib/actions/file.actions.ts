@@ -1,6 +1,6 @@
 'use server';
 
-import type {UploadFileProps, RenameFileProps} from "@/types";
+import type {UploadFileProps, RenameFileProps, UpdateFileUsersProps} from "@/types";
 import {createAdminClient} from "@/lib/appwrite"
 import { appwriteConfig } from "@/lib/appwrite/config";
 import { ID, Query, Models } from "node-appwrite";
@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/actions/user.actions";
 import { InputFile } from "node-appwrite/file";
 import { revalidatePath } from "next/cache";
 import { getFileType, parseStringify } from "@/lib/utils";
+import { z } from "zod";
 
 const handleError = (error: unknown, message: string): never => {
     console.error(message, error);
@@ -59,11 +60,12 @@ export const uploadFile = async ({file, ownerId, accountId, path}: UploadFilePro
     }
 }
 
-const createQueries = (currentUser: Models.Document) => {
+const createQueries = (currentUser: Models.Document & { email: string }) => {
     const queries = [
         Query.or([
             Query.equal('owner', currentUser.$id),
-            Query.contains('users', currentUser.$id)
+            // Shared recipients are stored as normalized emails, not user IDs.
+            Query.contains('users', [currentUser.email.trim().toLowerCase()])
         ])
     ];
 
@@ -116,4 +118,38 @@ export const renameFile = async({fileId, name, extension, path}: RenameFileProps
     } 
     catch(error)
     {handleError(error, "Failed to rename file")}
+}
+
+export const updateFileUsers = async({fileId, emails, path}: UpdateFileUsersProps) => {
+    const {databases} = await createAdminClient();
+
+    try
+    {
+        // Authenticate on the server and check ownership before using the admin client.
+        // A recipient may read a shared file but cannot change its recipient list.
+        const currentUser = await getCurrentUser();
+        if (!currentUser) throw new Error("Please sign in");
+        const file = await databases.getDocument<Models.Document & {
+            owner: string | { $id: string };
+        }>(appwriteConfig.databaseId, appwriteConfig.filesTableId, fileId);
+        const ownerId = typeof file.owner === "string" ? file.owner : file.owner.$id;
+        if (ownerId !== currentUser.$id) throw new Error("Only the owner can change sharing");
+
+        // Validate every address; an empty array intentionally removes all recipients.
+        const recipients = [...new Set(z.array(z.string().trim().toLowerCase().email()).parse(emails))];
+        // Replace the full list, allowing both additions and removals in one save.
+        const updatedFile = await databases.updateDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.filesTableId,
+            fileId,
+            {
+                users: recipients,
+            },
+        );
+
+        revalidatePath(path);
+        return parseStringify(updatedFile);
+    } 
+    catch(error)
+    {handleError(error, "Failed to update file users")}
 }
