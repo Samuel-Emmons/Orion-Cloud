@@ -13,6 +13,7 @@ export type CardFile = Models.Document & {
     name: string;
     bucketFileId: string;
     users?: string[];
+    ownerEmail?: string | null;
     owner?: string | { fullName?: string } | null;
 };
 

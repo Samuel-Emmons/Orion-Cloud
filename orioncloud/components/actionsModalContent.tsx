@@ -76,14 +76,11 @@ const DetailRow = ({label, value}:{label: string; value: string}) => {
 }
 
 export const FileDetails = ({file}: {file: CardFile}) => {
-    const ownerName = typeof file.owner === "object" && file.owner !== null
-        ? file.owner.fullName ?? "Unknown owner"
-        : "Unknown owner";
     return (<>
         <ImageThumbnail file={file}/>
         <DetailRow label="Format:" value={file.extension}/>
         <DetailRow label="Size:" value={convertFileSize(file.size)}/>
-        <DetailRow label="Owner:" value={ownerName}/>
+        <DetailRow label="Owner:" value={file.ownerEmail || "Owner email unavailable"}/>
         <DetailRow label="Last edit:" value={formatDateTime(file.$updatedAt)}/>
     </>);
 }

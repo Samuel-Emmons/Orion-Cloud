@@ -41,7 +41,7 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
   const [name, setName] = useState(file.name);
   const [isLoading, setIsLoading] = useState(false);
   const [emails, setEmails] = useState<string[]>([])
-  // Existing recipients are edited locally; Share saves the complete list.
+  // Existing recipients shown in the dialog; Share adds the new input emails.
   const [sharedEmails, setSharedEmails] = useState<string[]>(file.users ?? []);
 
   const path = usePathname();
@@ -81,11 +81,25 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
     }
   };
 
-  const handleRemoveUser = (email: string) => {
-    // Stage removal only. Cancel discards it; Share persists it.
+  const handleRemoveUser = async (email: string) => {
     if (isLoading) return;
-    setSharedEmails(previous => previous.filter(item => item !== email));
-    setEmails(previous => previous.filter(item => item.toLowerCase() !== email.toLowerCase()));
+    // Keep the other saved recipients; do not save unsent input emails here.
+    const updatedEmails = sharedEmails.filter((item) => item !== email);
+    setIsLoading(true);
+    try {
+      const updatedFile = await updateFileUsers({
+        fileId: file.$id,
+        emails: updatedEmails,
+        path,
+      });
+      if (!updatedFile) throw new Error("Removal failed");
+      toast.add({ title: "Recipient removed", type: "success" });
+      closeAllModals();
+    } catch {
+      toast.add({ title: "Removal failed", description: "Could not remove this recipient. Please try again.", type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -172,7 +186,7 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
           {action.value === "share" && (
             <fieldset disabled={isLoading} className="min-w-0">
               <ShareInput file={{ ...file, users: sharedEmails }} onInputChange={setEmails} onRemove={handleRemoveUser}/>
-              <p className="mt-2 text-xs text-gray-500">Press Share to save additions or removals.</p>
+              <p className="mt-2 text-xs text-gray-500">Press Share to add recipients. Removing a recipient saves immediately.</p>
             </fieldset>
           )}
           {action.value === "rename" && (

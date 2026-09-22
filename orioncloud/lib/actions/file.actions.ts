@@ -3,7 +3,7 @@
 import type {UploadFileProps, RenameFileProps, UpdateFileUsersProps} from "@/types";
 import {createAdminClient} from "@/lib/appwrite"
 import { appwriteConfig } from "@/lib/appwrite/config";
-import { ID, Query, Models } from "node-appwrite";
+import { ID, Query, Models, AppwriteException } from "node-appwrite";
 import { getCurrentUser } from "@/lib/actions/user.actions";
 import { InputFile } from "node-appwrite/file";
 import { revalidatePath } from "next/cache";
@@ -82,13 +82,46 @@ export const getFiles = async () => {
         if(!currentUser) throw new Error("User not found")
             const queries = createQueries(currentUser);
 
-        const files = await databases.listDocuments(
+        const files = await databases.listDocuments<Models.Document & {
+            owner?: string | { $id: string } | null;
+        }>(
             appwriteConfig.databaseId,
             appwriteConfig.filesTableId,
             queries,
         );
 
-        return parseStringify(files);
+        // The saved owner is the original uploader's profile ID, even after sharing.
+        // Look up each distinct owner once, after filtering files for this viewer.
+        const getOwnerId = (owner: (typeof files.documents)[number]["owner"]) =>
+            typeof owner === "string" ? owner : owner?.$id;
+        const ownerIds = [...new Set(files.documents.map(file => getOwnerId(file.owner))
+            .filter((id): id is string => Boolean(id)))];
+        const ownerEmails = new Map(await Promise.all(ownerIds.map(async (ownerId) => {
+            try {
+                // Return only the email needed by Details, not the whole user profile.
+                const owner = await databases.getDocument<Models.Document & { email: string }>(
+                    appwriteConfig.databaseId,
+                    appwriteConfig.usersTableId,
+                    ownerId,
+                    [Query.select(["email"])],
+                );
+                return [ownerId, owner.email] as const;
+            } catch (error) {
+                // Keep files visible if their original owner's profile was deleted.
+                if (error instanceof AppwriteException && error.code === 404) {
+                    return [ownerId, null] as const;
+                }
+                throw error;
+            }
+        })));
+
+        return parseStringify({
+            ...files,
+            documents: files.documents.map(file => ({
+                ...file,
+                ownerEmail: ownerEmails.get(getOwnerId(file.owner) ?? "") ?? null,
+            })),
+        });
     }catch(error)
     {
         handleError(error, "Failed to get files");
