@@ -8,7 +8,7 @@ import type { CardFile } from "@/components/Card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
-import { renameFile } from "@/lib/actions/file.actions";
+import { renameFile, deleteFile } from "@/lib/actions/file.actions";
 import { toast } from "@/components/ui/toast";
 import { FileDetails } from "@/components/actionsModalContent";
 import { ShareInput } from "@/components/actionsModalContent";
@@ -58,7 +58,7 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
 
   const handleAction = async() => {
     if(!action || isLoading) return;
-    if (action.value !== "rename" && action.value !== "share") {
+    if (action.value !== "rename" && action.value !== "share" && action.value !== "delete") {
       toast.add({ title: "Not available yet", description: "This action still needs to be implemented." });
       return;
     }
@@ -70,12 +70,14 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
         .map(email => email.trim().toLowerCase()).filter(Boolean))];
       const updatedFile = action.value === "rename"
         ? await renameFile({ fileId: file.$id, name, extension: file.extension, path })
-        : await updateFileUsers({ fileId: file.$id, emails: recipients, path });
+        : action.value === "share"
+          ? await updateFileUsers({ fileId: file.$id, emails: recipients, path })
+          : await deleteFile({ fileId: file.$id, bucketFileId: file.bucketFileId, path });
       if (!updatedFile) throw new Error("Update failed");
-      toast.add({ title: action.value === "rename" ? "File renamed" : "Sharing updated", type: "success" });
+      toast.add({ title: action.value === "delete" ? "File deleted" : action.value === "rename" ? "File renamed" : "Sharing updated", type: "success" });
       closeAllModals();
     } catch {
-      toast.add({ title: "Update failed", description: "Check the email addresses and make sure you own this file, then try again.", type: "error" });
+      toast.add({ title: action.value === "delete" ? "Delete failed" : "Update failed", description: "Could not complete this action. Make sure you own the file and try again.", type: "error" });
     } finally {
       setIsLoading(false);
     }
@@ -199,6 +201,13 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
                 onChange={(e) => setName(e.target.value)}
               />
             </label>
+          )}
+          {action.value === "delete" && (
+            <p className="delete-confirmation">
+              Are you sure you want to delete {' '}
+              <span className="delete-file-name">{file.name}</span>?
+            </p>
+
           )}
             {['rename', 'delete', 'share'].includes(action.value) && (
               <DialogFooter className="flex flex-col gap-3 md:flex-row">

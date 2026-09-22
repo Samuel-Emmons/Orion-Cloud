@@ -1,6 +1,6 @@
 'use server';
 
-import type {UploadFileProps, RenameFileProps, UpdateFileUsersProps} from "@/types";
+import type {UploadFileProps, RenameFileProps, UpdateFileUsersProps, DeleteFileProps} from "@/types";
 import {createAdminClient} from "@/lib/appwrite"
 import { appwriteConfig } from "@/lib/appwrite/config";
 import { ID, Query, Models, AppwriteException } from "node-appwrite";
@@ -185,4 +185,41 @@ export const updateFileUsers = async({fileId, emails, path}: UpdateFileUsersProp
     } 
     catch(error)
     {handleError(error, "Failed to update file users")}
+}
+
+export const deleteFile = async({fileId, path}: DeleteFileProps) =>{
+    const {databases, storage} = await createAdminClient();
+
+    try{
+        // Never trust a browser-supplied owner or storage ID for deletion.
+        const user = await getCurrentUser();
+        if (!user) throw new Error("Please sign in");
+        const file = await databases.getDocument<Models.Document & {
+            owner: string | { $id: string };
+            bucketFileId: string;
+        }>(appwriteConfig.databaseId, appwriteConfig.filesTableId, fileId);
+        const ownerId = typeof file.owner === "string" ? file.owner : file.owner?.$id;
+        if (ownerId !== user.$id) throw new Error("Only the owner can delete this file");
+        if (!file.bucketFileId) throw new Error("File has no storage ID");
+
+        // Delete storage first so a failed storage request leaves the document for retry.
+        // If storage was already removed, continue cleaning up the document.
+        try {
+            await storage.deleteFile(appwriteConfig.bucketId, file.bucketFileId);
+        } catch (error) {
+            if (!(error instanceof AppwriteException && error.code === 404)) throw error;
+        }
+        await databases.deleteDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.filesTableId,
+            fileId,
+        );
+
+        revalidatePath(path);
+        return parseStringify({status: 'success'})
+    }
+    catch(error)
+    {
+        handleError(error, "Failed to delete file");
+    }
 }

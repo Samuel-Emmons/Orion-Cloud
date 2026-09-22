@@ -17,3 +17,9 @@ export interface UpdateFileUsersProps {
     emails: string[];
     path: string;
 }
+
+export interface DeleteFileProps {
+    fileId: string;
+    bucketFileId: string;
+    path: string;
+}
