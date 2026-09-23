@@ -1,3 +1,9 @@
+import type { FileType } from "@/lib/utils";
+
+export interface GetFilesProps {
+    types?: FileType[];
+}
+
 export interface UploadFileProps {
     file: File;
     ownerId: string;

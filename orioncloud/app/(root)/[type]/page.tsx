@@ -1,6 +1,8 @@
 import Sort from "@/components/sort"
 import {getFiles} from "@/lib/actions/file.actions"
 import Card, { type CardFile } from "@/components/Card"
+import { getFileTypeParams } from "@/lib/utils";
+import { notFound } from "next/navigation";
 
 type SearchParamProps = {
     params: Promise<{ type: string }>;
@@ -9,7 +11,10 @@ type SearchParamProps = {
 const Page = async ({ params }: SearchParamProps) => {
     const { type } = await params;
 
-    const files = await getFiles();
+    const types = getFileTypeParams(type);
+    if (types.length === 0) notFound();
+
+    const files = await getFiles({ types });
 
     return <div className="page-container">
         <section className="w-full">

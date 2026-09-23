@@ -35,7 +35,18 @@ export const parseStringify = (value: unknown) => {
     return JSON.parse(JSON.stringify(value));
 }
 
-type FileType = "document" | "image" | "video" | "audio" | "other";
+export type FileType = "document" | "image" | "video" | "audio" | "other";
+
+// Page names are plural; stored file types are singular.
+export const getFileTypeParams = (pageType: string): FileType[] => {
+    switch (pageType) {
+        case "documents": return ["document"];
+        case "images": return ["image"];
+        case "media": return ["audio", "video"];
+        case "others": return ["other"];
+        default: return [];
+    }
+};
 
 const fileExtensions: Record<Exclude<FileType, "other">, readonly string[]> = {
     document: ["pdf", "doc", "docx", "txt", "rtf", "odt", "md", "csv", "xls", "xlsx", "ods", "ppt", "pptx", "odp"],
