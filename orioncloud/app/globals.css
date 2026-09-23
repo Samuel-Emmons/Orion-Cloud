@@ -156,8 +156,8 @@
 
 @layer components {
   .header {
-    @apply flex items-center justify-between gap-4
-      border-b-2 border-brand bg-gray-50 px-6 py-4;
+    @apply flex shrink-0 items-center justify-between gap-4
+      bg-gray-50 px-6 py-4;
   }
 
   .header-wrapper {
@@ -171,13 +171,13 @@
   }
 
   .main-content {
-    @apply min-h-0 flex-1 overflow-y-auto bg-gray-100 p-6;
+    @apply min-h-0 flex-1 overflow-y-auto border-t border-gray-300 bg-gray-200 p-4 md:rounded-tl-2xl md:border-l md:p-6;
   }
 }
 
 @layer components {
   .sidebar-nav-item {
-    @apply flex items-center gap-3 rounded-xl px-4 py-3
+    @apply flex items-center gap-3 rounded-xl px-3 py-3 text-base font-medium
       text-gray-700 transition-colors hover:bg-gray-200;
   }
 
@@ -188,4 +188,15 @@
   .nav-icon {
     @apply size-6 shrink-0;
   }
+}
+
+@media (max-height: 720px) {
+  .sidebar-illustration { display: none; }
+}
+
+@media (max-height: 520px) {
+  .sidebar { gap: 0.5rem; padding-top: 0.5rem; padding-bottom: 0.5rem; }
+  .sidebar-logo { height: 3rem; }
+  .sidebar-nav ul { gap: 0.25rem; }
+  .sidebar-nav-item { padding-top: 0.25rem; padding-bottom: 0.25rem; }
 }

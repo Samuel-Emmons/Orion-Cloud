@@ -10,6 +10,17 @@ export const avatarPlaceholderUrl = "https://www.svgrepo.com/show/452030/avatar-
 
 export const MAX_FILE_SIZE = 50*1024*1024;
 
+export const sortTypes = [
+    { label: "Newest first", value: "$createdAt-desc" },
+    { label: "Oldest first", value: "$createdAt-asc" },
+    { label: "Name: A to Z", value: "name-asc" },
+    { label: "Name: Z to A", value: "name-desc" },
+    { label: "Largest first", value: "size-desc" },
+    { label: "Smallest first", value: "size-asc" },
+    { label: "Recently edited", value: "$updatedAt-desc" },
+    { label: "Least recently edited", value: "$updatedAt-asc" },
+];
+
 export const actionsDropdownItems = [
     {
         label: "Rename",

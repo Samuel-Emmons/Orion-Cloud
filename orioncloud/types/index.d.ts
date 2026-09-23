@@ -1,6 +1,7 @@
 import type { FileType } from "@/lib/utils";
 
 export interface GetFilesProps {
+    fileId?: string;
     types?: FileType[];
     searchText?: string;
     sort?: string;

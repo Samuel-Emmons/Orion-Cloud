@@ -89,7 +89,7 @@ const createQueries = (currentUser: Models.Document & { email: string }, types: 
     return queries;
 }
 
-export const getFiles = async ({types = [], searchText = '', sort = '$createdAt-desc', limit}: GetFilesProps = {}) => {
+export const getFiles = async ({types = [], searchText = '', sort = '$createdAt-desc', limit, fileId}: GetFilesProps = {}) => {
     const {databases} =  await createAdminClient();
 
     try{
@@ -97,6 +97,7 @@ export const getFiles = async ({types = [], searchText = '', sort = '$createdAt-
 
         if(!currentUser) throw new Error("User not found")
             const queries = createQueries(currentUser, types, searchText, sort, limit);
+        if (fileId) queries.push(Query.equal("$id", fileId));
 
         const files = await databases.listDocuments<Models.Document & {
             owner?: string | { $id: string } | null;

@@ -12,13 +12,14 @@ type SearchParamProps = {
 const Page = async ({ searchParams, params }: SearchParamProps) => {
     const { type } = await params;
     const queryParams = await searchParams;
+    const fileId = typeof queryParams.fileId === "string" ? queryParams.fileId : undefined;
     const searchText = typeof queryParams.query === "string" ? queryParams.query : "";
     const sort = typeof queryParams.sort === "string" ? queryParams.sort : "$createdAt-desc";
 
     const types = getFileTypeParams(type);
     if (types.length === 0) notFound();
 
-    const files = await getFiles({ types, searchText, sort });
+    const files = await getFiles({ types, searchText: fileId ? "" : searchText, sort, fileId });
 
     return <div className="page-container">
         <section className="w-full">

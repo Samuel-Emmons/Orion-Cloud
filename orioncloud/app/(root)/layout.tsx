@@ -14,10 +14,10 @@ const Layout = async (
 
     if(!currentUser) return redirect("/sign-in")
 
-    return <main className = "flex h-screen">
+    return <main className = "flex h-dvh overflow-hidden bg-gray-50">
         <Sidebar {...currentUser}/>
 
-        <section className="flex h-full flex-1 flex-col">
+        <section className="flex h-full min-w-0 flex-1 flex-col">
             <MobileNavigation
                 ownerId={currentUser.$id}
                 accountId={currentUser.accountId}
@@ -33,9 +33,6 @@ const Layout = async (
         </section>
         <Toaster/>
     </main>
-    return(
-        <div>Layout</div>
-    )
 }
 
 
