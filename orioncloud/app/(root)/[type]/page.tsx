@@ -6,15 +6,19 @@ import { notFound } from "next/navigation";
 
 type SearchParamProps = {
     params: Promise<{ type: string }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-const Page = async ({ params }: SearchParamProps) => {
+const Page = async ({ searchParams, params }: SearchParamProps) => {
     const { type } = await params;
+    const queryParams = await searchParams;
+    const searchText = typeof queryParams.query === "string" ? queryParams.query : "";
+    const sort = typeof queryParams.sort === "string" ? queryParams.sort : "$createdAt-desc";
 
     const types = getFileTypeParams(type);
     if (types.length === 0) notFound();
 
-    const files = await getFiles({ types });
+    const files = await getFiles({ types, searchText, sort });
 
     return <div className="page-container">
         <section className="w-full">

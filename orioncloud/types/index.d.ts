@@ -2,6 +2,9 @@ import type { FileType } from "@/lib/utils";
 
 export interface GetFilesProps {
     types?: FileType[];
+    searchText?: string;
+    sort?: string;
+    limit?: number;
 }
 
 export interface UploadFileProps {

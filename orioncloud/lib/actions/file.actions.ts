@@ -60,7 +60,7 @@ export const uploadFile = async ({file, ownerId, accountId, path}: UploadFilePro
     }
 }
 
-const createQueries = (currentUser: Models.Document & { email: string }, types: string[]) => {
+const createQueries = (currentUser: Models.Document & { email: string }, types: string[], searchText: string, sort: string, limit?: number) => {
     const queries = [
         Query.or([
             Query.equal('owner', currentUser.$id),
@@ -71,19 +71,32 @@ const createQueries = (currentUser: Models.Document & { email: string }, types: 
 
     // This additional query is ANDed with the owner/shared-access condition above.
     if (types.length > 0) queries.push(Query.equal('type', types));
+    if (searchText) queries.push(Query.contains('name', searchText));
+    if (limit !== undefined) {
+        if (!Number.isInteger(limit) || limit < 1) throw new Error("Limit must be a positive integer");
+        queries.push(Query.limit(limit));
+    }
+
+    // URL parameters can be empty or invalid; fall back to newest first.
+    const [field, direction] = sort.split('-');
+    const validSort = ["$createdAt", "$updatedAt", "name", "size"].includes(field)
+        && (direction === "asc" || direction === "desc") && sort.split('-').length === 2;
+    const sortBy = validSort ? field : "$createdAt";
+    const orderBy = validSort ? direction : "desc";
+    queries.push(orderBy === 'asc' ? Query.orderAsc(sortBy) : Query.orderDesc(sortBy));
 
     //TODO: 
     return queries;
 }
 
-export const getFiles = async ({types = []}: GetFilesProps = {}) => {
+export const getFiles = async ({types = [], searchText = '', sort = '$createdAt-desc', limit}: GetFilesProps = {}) => {
     const {databases} =  await createAdminClient();
 
     try{
         const currentUser = await getCurrentUser();
 
         if(!currentUser) throw new Error("User not found")
-            const queries = createQueries(currentUser, types);
+            const queries = createQueries(currentUser, types, searchText, sort, limit);
 
         const files = await databases.listDocuments<Models.Document & {
             owner?: string | { $id: string } | null;
