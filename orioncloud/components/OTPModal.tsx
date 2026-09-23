@@ -69,7 +69,6 @@ const OtpModal = ({
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogContent
         className="w-[calc(100%-2rem)] gap-7 rounded-2xl border-t-4 border-brand bg-gray-50 p-6 text-gray-900 shadow-xl data-[size=default]:max-w-md data-[size=default]:sm:max-w-md"
-        style={{ fontFamily: "var(--font-poppins), sans-serif" }}
       >
         <AlertDialogHeader className="gap-3">
           <AlertDialogTitle className="w-full text-center text-2xl font-semibold tracking-tight">

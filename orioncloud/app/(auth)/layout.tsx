@@ -8,7 +8,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <section className="hidden flex-col justify-between gap-12 bg-brand px-5 py-12 sm:px-10 md:flex lg:px-16">
         <div
           className="flex items-center gap-3 text-white"
-          style={{ fontFamily: "var(--font-poppins), sans-serif" }}
+          style={{ fontFamily: "var(--font-ubuntu), sans-serif" }}
         >
           <Image
             src={logo}
@@ -21,7 +21,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
         <div
           className="text-white"
-          style={{ fontFamily: "var(--font-poppins), sans-serif" }}
         >
           <h1 className="text-xl font-medium leading-tight tracking-tight sm:text-2xl lg:text-3xl">
             Manage Your Files
@@ -37,7 +36,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <div className="flex min-w-0 flex-col items-center justify-center bg-gray-100 px-5 py-12 sm:px-10">
         <div
           className="mb-10 flex items-center justify-center gap-3 text-gray-900 md:hidden"
-          style={{ fontFamily: "var(--font-poppins), sans-serif" }}
+          style={{ fontFamily: "var(--font-ubuntu), sans-serif" }}
         >
           <Image src={logo} alt="" className="h-auto w-12 shrink-0" />
           <span className="text-2xl font-semibold leading-tight tracking-tight">

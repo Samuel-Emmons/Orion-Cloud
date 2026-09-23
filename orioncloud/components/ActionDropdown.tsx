@@ -110,12 +110,12 @@ const ActionDropdown = ({ file }: { file: CardFile }) => {
       else setIsModalOpen(true);
     }}>
       <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-        <DropdownMenuTrigger className="shad-no-focus" disabled={isLoading} aria-label={isLoading ? "Saving changes" : "File actions"}>
+        <DropdownMenuTrigger className="shad-no-focus flex size-7 items-center justify-center rounded-md hover:bg-gray-100" disabled={isLoading} aria-label={isLoading ? "Saving changes" : "File actions"}>
           <Image
             src="/assets/icons/dots.svg"
             alt="dots"
-            width={34}
-            height={34}
+            width={20}
+            height={20}
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent>

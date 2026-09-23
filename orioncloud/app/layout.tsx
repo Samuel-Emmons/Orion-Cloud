@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import {Poppins, Geist } from 'next/font/google'
+import { Ubuntu, Rokkitt } from 'next/font/google'
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toast";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const rokkitt = Rokkitt({subsets:['latin'],variable:'--font-rokkitt', display: 'swap'});
 
-const poppins = Poppins({
+const ubuntu = Ubuntu({
   subsets: ['latin'],
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
-  variable: '--font-poppins',
+  weight: ['300', '400', '500', '700'],
+  variable: '--font-ubuntu',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={cn("font-poppins", "h-full", "antialiased", poppins.variable, "font-sans", geist.variable)}
+      className={cn("h-full antialiased font-body", ubuntu.variable, rokkitt.variable)}
     >
       <body className="min-h-full flex flex-col">
         {children}

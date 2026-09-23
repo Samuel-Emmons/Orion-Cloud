@@ -43,7 +43,7 @@ const Sidebar=({fullName, avatar, email}: Props)=>{
                     ))}
                 </ul>
             </nav>
-            <Image src={filesImage} alt="Files illustration" className="sidebar-illustration mx-auto hidden min-h-0 w-24 shrink object-contain lg:block"/>
+            <Image src={filesImage} alt="Files illustration" className="sidebar-illustration mx-auto mt-4 block h-36 min-h-0 w-16 shrink object-contain lg:w-36"/>
 
             <div className="mt-auto shrink-0 pt-2">
               <div className="flex items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-gray-100 p-2.5 shadow-sm lg:justify-start lg:p-3" title={`${displayName} — ${email}`}>
