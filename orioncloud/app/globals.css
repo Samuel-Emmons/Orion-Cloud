@@ -160,12 +160,12 @@
 
 @layer components {
   .header {
-    @apply flex shrink-0 items-center justify-between gap-4
-      bg-gray-50 px-6 py-4;
+    @apply grid min-w-0 shrink-0 grid-cols-1 items-center gap-3
+      bg-gray-50 px-4 py-3 md:flex md:justify-between md:gap-4 md:px-6 md:py-4;
   }
 
   .header-wrapper {
-    @apply flex items-center gap-4;
+    @apply flex shrink-0 items-center justify-end gap-3 md:gap-4;
   }
 
   .sign-out-button {
