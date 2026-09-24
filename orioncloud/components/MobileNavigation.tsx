@@ -87,7 +87,6 @@ const MobileNavigation = ({ownerId, accountId, fullName, avatar, email}: Props) 
                     ></Image>
                 </Button>
             </div>
-            <SheetDescription>This action cannot be undone.</SheetDescription>
         </SheetContent>
         </Sheet>
     </header>)

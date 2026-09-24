@@ -1,7 +1,7 @@
 import Sort from "@/components/sort"
 import {getFiles} from "@/lib/actions/file.actions"
 import Card, { type CardFile } from "@/components/Card"
-import { getFileTypeParams } from "@/lib/utils";
+import { getFileTypeParams, convertFileSize } from "@/lib/utils";
 import { notFound } from "next/navigation";
 
 type SearchParamProps = {
@@ -21,6 +21,11 @@ const Page = async ({ searchParams, params }: SearchParamProps) => {
 
     const files = await getFiles({ types, searchText: fileId ? "" : searchText, sort, fileId });
 
+    //calculate total size of files for each type
+    const totalSize = files.documents.reduce(
+        (total: number, file: CardFile) => total + file.size, 0
+    );
+
     return <div className="page-container">
         <section className="w-full">
             <h1 className="text-3xl font-bold capitalize sm:text-4xl">
@@ -29,7 +34,7 @@ const Page = async ({ searchParams, params }: SearchParamProps) => {
             <div className="mt-4 flex w-full items-center justify-between gap-4">
                 <p className="body-1">
                     Total: <span className="h5">
-                        0 MB
+                        {convertFileSize(totalSize)}
                     </span>
                 </p>
 
@@ -41,7 +46,6 @@ const Page = async ({ searchParams, params }: SearchParamProps) => {
             </div>
         </section>
 
-        {/* Currently working on */}
         {files.total > 0 ? (
             <section aria-label="Files" className="mt-6 grid grid-cols-1 gap-3 lg:grid-cols-3 xl:grid-cols-4">
                 {files.documents.map((file: CardFile) => (
