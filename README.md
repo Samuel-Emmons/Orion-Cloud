@@ -2,7 +2,7 @@
 
 Orion Cloud is a full-stack file management application built with Next.js, React, TypeScript, and Appwrite. Users can upload, organize, search, download, and share files through a responsive interface.
 
-Inspired by Google Drive, this project was created to learn full-stack development through authentication, cloud storage, database operations, and reusable UI components. It is under active development.
+Inspired by Google Drive, this project was created to learn full-stack development through authentication, cloud storage, database operations, and reusable UI components.
 
 ## Features
 
@@ -204,14 +204,3 @@ Production environments also need the Appwrite variables, matching image-host co
 - All Files currently renders one database response page. Its total count may exceed the cards displayed; pagination or Load more is not implemented.
 - Recent Files requests four records independently of the main list's selected sort.
 
-## Development Status
-
-Core file management, the dashboard, category filtering, search, sorting, and in-app sharing are implemented. Remaining work includes:
-
-- Pagination for larger libraries and complete storage-usage aggregation.
-- Consistent server-side authentication, authorization, and validation across all mutations, particularly upload and rename.
-- Reviewing direct storage-preview permissions alongside application sharing rules.
-- Automated integration tests for authentication and file operations.
-- Optional sharing email notifications and storage quotas.
-
-This is a learning project under active development, not a claim of production readiness. Type checking alone does not verify live Appwrite configuration or end-to-end behavior.
